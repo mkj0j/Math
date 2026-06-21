@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الحاسبة العلمية الفائقة والذكية - ماجد كريم الفريجي</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Math.js for calculation and algebraic parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+    <!-- Marked.js for parsing AI markdown response -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            blue: '#1e40af',      /* أزرق داكن */
+                            lightblue: '#3b82f6', /* أزرق فاتح */
+                            red: '#ef4444',       /* أحمر مشرق */
+                            darkred: '#b91c1c',   /* أحمر داكن */
+                            white: '#ffffff',     /* أبيض */
+                            bg: '#f1f5f9',        /* خلفية مريحة */
+                            card: '#ffffff'       /* بطاقة بيضاء */
+                        }
+                    },
+                    boxShadow: {
+                        'premium': '0 10px 30px -10px rgba(30, 64, 175, 0.15)',
+                        'neon-red': '0 0 15px rgba(239, 68, 68, 0.4)',
+                        'neon-blue': '0 0 15px rgba(59, 130, 246, 0.3)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap');
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #f8fafc;
+        }
+        /* تصميم مخصص لأشرطة التمرير */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b82f6;
+        }
+        /* حركات انتقالية ناعمة للأزرار */
+        .btn-calc {
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-calc:active {
+            transform: scale(0.93);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <!-- الهيدر (رأس الصفحة) -->
+    <header class="bg-brand-white border-b border-slate-200/80 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-3.5 flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <div class="bg-gradient-to-tr from-brand-blue to-brand-lightblue text-white p-2.5 rounded-2xl shadow-neon-blue">
+                    <i class="fa-solid fa-calculator text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black text-brand-blue tracking-wide">المنصة العلمية الفائقة</h1>
+                    <p class="text-xs text-brand-red font-semibold flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-brand-red animate-ping"></span>
+                        معاينة لحظية فائقة الذكاء + رسم بياني ومساعد ذكي
+                    </p>
+                </div>
+            </div>
+
+            <!-- علامة تبويب لاختيار ميزات الواجهة -->
+            <div class="flex bg-slate-100 p-1 rounded-xl text-xs font-semibold text-slate-600">
+                <button onclick="switchTab('calc-tab')" id="btn-calc-tab" class="px-4 py-2 rounded-lg bg-white text-brand-blue shadow-sm transition">الحاسبة ورسم الدوال</button>
+                <button onclick="switchTab('converter-tab')" id="btn-converter-tab" class="px-4 py-2 rounded-lg transition">محول الوحدات</button>
+                <button onclick="switchTab('constants-tab')" id="btn-constants-tab" class="px-4 py-2 rounded-lg transition">الثوابت والمعادلات</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- المحتوى الرئيسي للموقع -->
+    <main class="max-w-7xl w-full mx-auto p-4 md:p-6 flex-grow grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- العمود الأيمن (الحاسبة، الميزات الملحقة، الرسام) -->
+        <div class="lg:col-span-8 flex flex-col gap-6">
+            
+            <!-- تبويب الحاسبة والرسام البياني -->
+            <div id="calc-tab" class="tab-content flex flex-col gap-6">
+                <!-- شاشة الحاسبة والعمليات -->
+                <div class="bg-white rounded-3xl border border-slate-200/80 shadow-premium overflow-hidden">
+                    <div class="bg-gradient-to-br from-slate-900 via-slate-950 to-brand-blue text-white p-6 relative">
+                        <!-- ترويسة الشاشة -->
+                        <div class="flex justify-between items-center text-xs font-bold text-slate-400 mb-2">
+                            <div class="flex gap-2">
+                                <span id="angleMode" class="bg-brand-lightblue/20 text-brand-lightblue px-2 py-0.5 rounded cursor-pointer hover:bg-brand-lightblue hover:text-white transition" onclick="toggleAngleMode()">RAD</span>
+                                <span id="shiftMode" class="bg-brand-red/20 text-brand-red px-2 py-0.5 rounded hidden">SHIFT</span>
+                            </div>
+                            <span class="font-sans text-slate-500">حساب فوري</span>
+                        </div>
+
+                        <!-- سجل الحساب المكتوب سابقاً -->
+                        <div id="equationHistory" class="text-left font-mono text-slate-400 text-sm md:text-base h-7 overflow-x-auto whitespace-nowrap scrollbar-none tracking-wider">
+                            &nbsp;
+                        </div>
+
+                        <!-- حقل الإدخال الذكي -->
+                        <div class="relative mt-1">
+                            <input id="calcDisplay" type="text" 
+                                   class="w-full bg-transparent text-right text-3xl md:text-5xl font-mono focus:outline-none tracking-widest text-white placeholder-slate-800" 
+                                   placeholder="0" oninput="onDisplayInput()">
+                        </div>
+
+                        <!-- المعاينة اللحظية المباشرة (Live Preview) -->
+                        <div id="livePreviewContainer" class="mt-3 py-1.5 px-3 rounded-xl bg-white/5 border border-white/10 flex justify-between items-center min-h-[38px]">
+                            <span class="text-xs text-slate-400 font-semibold"><i class="fa-solid fa-bolt text-brand-red ml-1"></i>معاينة النتيجة:</span>
+                            <div id="livePreview" class="text-right text-brand-lightblue font-mono text-lg md:text-xl font-bold">0</div>
+                        </div>
+                    </div>
+
+                    <!-- لوحة أزرار الحاسبة العلمية الفائقة -->
+                    <div class="p-4 md:p-6 bg-slate-50 border-t border-slate-100 flex flex-col gap-4">
+                        <!-- أزرار التحكم والذكاء السريعة -->
+                        <div class="grid grid-cols-5 gap-2">
+                            <button onclick="handleShift()" class="btn-calc py-2.5 rounded-xl font-extrabold bg-brand-red hover:bg-brand-darkred text-white text-xs md:text-sm shadow-md">SHIFT</button>
+                            <button onclick="clearAll()" class="btn-calc py-2.5 rounded-xl font-extrabold bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs md:text-sm shadow-sm">AC</button>
+                            <button onclick="backspace()" class="btn-calc py-2.5 rounded-xl font-extrabold bg-amber-500 hover:bg-amber-600 text-white text-xs md:text-sm shadow-sm">DEL</button>
+                            <button onclick="sendExpressionToAI()" class="btn-calc col-span-2 py-2.5 rounded-xl font-black bg-gradient-to-r from-brand-blue to-brand-lightblue text-white text-xs md:text-sm shadow-neon-blue flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-wand-magic-sparkles text-brand-red animate-pulse"></i>
+                                <span>شرح وتفصيل بـ AI</span>
+                            </button>
+                        </div>
+
+                        <!-- الأزرار الرئيسية متجاوبة -->
+                        <div class="grid grid-cols-5 gap-2 md:gap-3">
+                            <!-- الأزرار العلمية -->
+                            <button onclick="appendToken('sin(')" class="btn-calc py-3 rounded-xl font-bold bg-white border border-slate-200 text-brand-blue hover:bg-slate-100 text-sm">sin</button>
+                            <button onclick="appendToken('cos(')" class="btn-calc py-3 rounded-xl font-bold bg-white border border-slate-200 text-brand-blue hover:bg-slate-100 text-sm">cos</button>
+                            <button onclick="appendToken('tan(')" class="btn-calc py-3 rounded-xl font-bold bg-white border border-slate-200 text-brand-blue hover:bg-slate-100 text-sm">tan</button>
+                            <button onclick="appendToken('^')" class="btn-calc py-3 rounded-xl font-bold bg-white border border-slate-200 text-brand-blue hover:bg-slate-100 text-sm">x<sup>y</sup></button>
+                            <button onclick="appendToken('sqrt(')" class="btn-calc py-3 rounded-xl font-bold bg-white border border-slate-200 text-brand-blue hover:bg-slate-100 text-sm">√</button>
+
+                            <button onclick="appendToken('asin(')" class="btn-calc py-3 rounded-xl font-semibold bg-white border border-slate-200 text-brand-blue hover:bg-slate-100 text-xs">sin⁻¹</button>
+                            <button onclick="appendToken('acos(')" class="btn-calc py-3 rounded-xl font-semibold bg-white border border-slate-200 text-brand-blue hover:bg-slate-100 text-xs">cos⁻¹</button>
+                            <button onclick="appendToken('atan(')" class="btn-calc py-3 rounded-xl font-semibold bg-white border border-slate-200 text-brand-blue hover:bg-slate-100 text-xs">tan⁻¹</button>
+                            <button onclick="appendToken('log10(')" class="btn-calc py-3 rounded-xl font-bold bg-white border border-slate-200 text-brand-blue hover:bg-slate-100 text-sm">log</button>
+                            <button onclick="appendToken('log(')" class="btn-calc py-3 rounded-xl font-bold bg-white border border-slate-200 text-brand-blue hover:bg-slate-100 text-sm">ln</button>
+
+                            <!-- ثوابت وعمليات مساعدة -->
+                            <button onclick="appendToken('pi')" class="btn-calc py-3 rounded-xl font-bold bg-white border border-slate-200 text-brand-blue hover:bg-slate-100 text-sm">π</button>
+                            <button onclick="appendToken('e')" class="btn-calc py-3 rounded-xl font-bold bg-white border border-slate-200 text-brand-blue hover:bg-slate-100 text-sm">e</button>
+                            <button onclick="appendToken('(')" class="btn-calc py-3 rounded-xl font-bold bg-white border border-slate-200 text-slate-500 hover:bg-slate-100 text-sm">(</button>
+                            <button onclick="appendToken(')')" class="btn-calc py-3 rounded-xl font-bold bg-white border border-slate-200 text-slate-500 hover:bg-slate-100 text-sm">)</button>
+                            <button onclick="appendToken('/')" class="btn-calc py-3 rounded-xl font-extrabold bg-brand-blue/10 text-brand-blue hover:bg-brand-blue hover:text-white text-lg">/</button>
+
+                            <!-- الأرقام والعمليات الرياضية الأساسية -->
+                            <button onclick="appendToken('7')" class="btn-calc py-3.5 rounded-xl font-bold bg-white hover:bg-slate-100 text-slate-800 text-lg shadow-sm">7</button>
+                            <button onclick="appendToken('8')" class="btn-calc py-3.5 rounded-xl font-bold bg-white hover:bg-slate-100 text-slate-800 text-lg shadow-sm">8</button>
+                            <button onclick="appendToken('9')" class="btn-calc py-3.5 rounded-xl font-bold bg-white hover:bg-slate-100 text-slate-800 text-lg shadow-sm">9</button>
+                            <button onclick="appendToken('!')" class="btn-calc py-3.5 rounded-xl font-bold bg-white border border-slate-200 text-brand-blue hover:bg-slate-100 text-sm">x!</button>
+                            <button onclick="appendToken('*')" class="btn-calc py-3.5 rounded-xl font-extrabold bg-brand-blue/10 text-brand-blue hover:bg-brand-blue hover:text-white text-lg">×</button>
+
+                            <button onclick="appendToken('4')" class="btn-calc py-3.5 rounded-xl font-bold bg-white hover:bg-slate-100 text-slate-800 text-lg shadow-sm">4</button>
+                            <button onclick="appendToken('5')" class="btn-calc py-3.5 rounded-xl font-bold bg-white hover:bg-slate-100 text-slate-800 text-lg shadow-sm">5</button>
+                            <button onclick="appendToken('6')" class="btn-calc py-3.5 rounded-xl font-bold bg-white hover:bg-slate-100 text-slate-800 text-lg shadow-sm">6</button>
+                            <button onclick="appendToken('^2')" class="btn-calc py-3.5 rounded-xl font-bold bg-white border border-slate-200 text-brand-blue hover:bg-slate-100 text-sm">x²</button>
+                            <button onclick="appendToken('-')" class="btn-calc py-3.5 rounded-xl font-extrabold bg-brand-blue/10 text-brand-blue hover:bg-brand-blue hover:text-white text-lg">-</button>
+
+                            <button onclick="appendToken('1')" class="btn-calc py-3.5 rounded-xl font-bold bg-white hover:bg-slate-100 text-slate-800 text-lg shadow-sm">1</button>
+                            <button onclick="appendToken('2')" class="btn-calc py-3.5 rounded-xl font-bold bg-white hover:bg-slate-100 text-slate-800 text-lg shadow-sm">2</button>
+                            <button onclick="appendToken('3')" class="btn-calc py-3.5 rounded-xl font-bold bg-white hover:bg-slate-100 text-slate-800 text-lg shadow-sm">3</button>
+                            <button onclick="appendToken('%')" class="btn-calc py-3.5 rounded-xl font-bold bg-white border border-slate-200 text-brand-blue hover:bg-slate-100 text-sm">%</button>
+                            <button onclick="appendToken('+')" class="btn-calc py-3.5 rounded-xl font-extrabold bg-brand-blue/10 text-brand-blue hover:bg-brand-blue hover:text-white text-lg">+</button>
+
+                            <button onclick="appendToken('0')" class="btn-calc col-span-2 py-3.5 rounded-xl font-bold bg-white hover:bg-slate-100 text-slate-800 text-lg shadow-sm">0</button>
+                            <button onclick="appendToken('.')" class="btn-calc py-3.5 rounded-xl font-bold bg-white hover:bg-slate-100 text-slate-800 text-lg shadow-sm">.</button>
+                            <button onclick="evaluateExpression()" class="btn-calc col-span-2 py-3.5 rounded-xl font-extrabold bg-brand-red text-white hover:bg-brand-darkred text-xl shadow-neon-red">=</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- رسم بياني متقدم للدوال ومحاكاة رسومية -->
+                <div class="bg-white rounded-3xl border border-slate-200/80 shadow-premium p-5 flex flex-col gap-4">
+                    <div class="flex justify-between items-center flex-wrap gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="p-1.5 bg-brand-blue/10 text-brand-blue rounded-lg"><i class="fa-solid fa-chart-line"></i></span>
+                            <h3 class="font-bold text-slate-800 text-base">رّسام المعادلات والدوال الرياضية التفاعلي</h3>
+                        </div>
+                        <span class="text-xs text-slate-400">يدعم رسم أي دالة مثل: <code class="bg-slate-100 px-1 rounded">sin(x)</code> أو <code class="bg-slate-100 px-1 rounded">x^2 - 4</code></span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        <div class="md:col-span-3 flex gap-2">
+                            <span class="bg-slate-100 border border-slate-200 rounded-xl px-3 flex items-center text-slate-500 font-mono text-xs">Y = </span>
+                            <input id="graphFunction" type="text" class="flex-grow bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue font-mono" placeholder="sin(x) * cos(x/2)" value="x^2 - 4">
+                        </div>
+                        <button onclick="plotGraph()" class="btn-calc bg-brand-blue hover:bg-blue-800 text-white font-bold py-2 px-4 rounded-xl text-sm shadow-md flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            <span>ارسم الآن</span>
+                        </button>
+                    </div>
+
+                    <!-- لوحة الرسم البياني -->
+                    <div class="relative bg-slate-900 rounded-2xl overflow-hidden flex items-center justify-center h-64 border border-slate-800">
+                        <canvas id="graphCanvas" class="absolute inset-0 w-full h-full cursor-crosshair"></canvas>
+                        <div class="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded text-[10px] text-slate-400 font-mono">
+                            انقر واسحب للتوجيه والتحرك
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- تبويب محول الوحدات الشامل -->
+            <div id="converter-tab" class="tab-content hidden flex flex-col gap-6">
+                <div class="bg-white rounded-3xl border border-slate-200/80 shadow-premium p-6 flex flex-col gap-5">
+                    <div class="flex items-center gap-2">
+                        <span class="p-2 bg-brand-red/10 text-brand-red rounded-lg"><i class="fa-solid fa-arrows-spin"></i></span>
+                        <h3 class="font-bold text-slate-800 text-lg">محول الوحدات العلمي الفوري</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">نوع الوحدة</label>
+                            <select id="convType" onchange="onConverterTypeChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue font-semibold">
+                                <option value="length">📏 الطول (أمتار، كيلومتر، ميل...)</option>
+                                <option value="weight">⚖️ الكتلة والوزن (جرام، باوند...)</option>
+                                <option value="temp">🌡️ درجة الحرارة (سيليسيوس، فهرنهايت...)</option>
+                                <option value="area">📐 المساحة (متر مربع، فدان...)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">من</label>
+                            <select id="convFrom" onchange="calculateConversion()" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue font-mono font-semibold"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">إلى</label>
+                            <select id="convTo" onchange="calculateConversion()" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue font-mono font-semibold"></select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col">
+                            <span class="text-xs text-slate-400 font-bold mb-1">القيمة المدخلة</span>
+                            <input id="convInputVal" type="number" oninput="calculateConversion()" class="bg-transparent font-mono text-2xl font-bold text-slate-700 focus:outline-none" value="1">
+                        </div>
+                        <div class="bg-brand-blue/5 p-4 rounded-2xl border border-brand-blue/10 flex flex-col justify-center">
+                            <span class="text-xs text-brand-blue font-bold mb-1">النتيجة المحسوبة</span>
+                            <div id="convResultVal" class="font-mono text-2xl font-black text-brand-blue">1</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- تبويب الثوابت والمعادلات الجاهزة -->
+            <div id="constants-tab" class="tab-content hidden flex flex-col gap-6">
+                <div class="bg-white rounded-3xl border border-slate-200/80 shadow-premium p-6">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="p-2 bg-amber-500/10 text-amber-500 rounded-lg"><i class="fa-solid fa-atom"></i></span>
+                        <h3 class="font-bold text-slate-800 text-lg">لوحة الثوابت والمعادلات المرجعية السريعة</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- ثوابت فيزيائية أساسية -->
+                        <div class="border border-slate-200/60 rounded-2xl p-4 flex flex-col gap-3">
+                            <h4 class="font-bold text-sm text-brand-blue border-b pb-2 mb-1"><i class="fa-solid fa-flask ml-1"></i> ثوابت علمية مهمة (اضغط للإدخال)</h4>
+                            <div class="grid grid-cols-1 gap-2">
+                                <button onclick="insertConstant('299792458')" class="btn-calc flex justify-between items-center p-2 rounded-xl bg-slate-50 hover:bg-brand-blue/10 text-xs transition">
+                                    <span class="font-semibold">سرعة الضوء (c)</span>
+                                    <span class="font-mono text-slate-500">299,792,458 m/s</span>
+                                </button>
+                                <button onclick="insertConstant('6.6743e-11')" class="btn-calc flex justify-between items-center p-2 rounded-xl bg-slate-50 hover:bg-brand-blue/10 text-xs transition">
+                                    <span class="font-semibold">ثابت الجاذبية العام (G)</span>
+                                    <span class="font-mono text-slate-500">6.6743 × 10⁻¹¹</span>
+                                </button>
+                                <button onclick="insertConstant('6.62607e-34')" class="btn-calc flex justify-between items-center p-2 rounded-xl bg-slate-50 hover:bg-brand-blue/10 text-xs transition">
+                                    <span class="font-semibold">ثابت بلانك (h)</span>
+                                    <span class="font-mono text-slate-500">6.626 × 10⁻³⁴ J·s</span>
+                                </button>
+                                <button onclick="insertConstant('9.80665')" class="btn-calc flex justify-between items-center p-2 rounded-xl bg-slate-50 hover:bg-brand-blue/10 text-xs transition">
+                                    <span class="font-semibold">تسارع الجاذبية الأرضية (g)</span>
+                                    <span class="font-mono text-slate-500">9.80665 m/s²</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- معادلات جاهزة للشرح والحل -->
+                        <div class="border border-slate-200/60 rounded-2xl p-4 flex flex-col gap-3">
+                            <h4 class="font-bold text-sm text-brand-red border-b pb-2 mb-1"><i class="fa-solid fa-calculator ml-1"></i> نماذج ومفاهيم نموذجية</h4>
+                            <div class="grid grid-cols-1 gap-2">
+                                <button onclick="insertTemplate('x^2 - 5x + 6 = 0')" class="btn-calc flex justify-between items-center p-2 rounded-xl bg-slate-50 hover:bg-brand-red/10 text-xs transition">
+                                    <span class="font-semibold">حل معادلة تربيعية</span>
+                                    <span class="font-mono text-slate-500">x² - 5x + 6 = 0</span>
+                                </button>
+                                <button onclick="insertTemplate('sin(x)^2 + cos(x)^2')" class="btn-calc flex justify-between items-center p-2 rounded-xl bg-slate-50 hover:bg-brand-red/10 text-xs transition">
+                                    <span class="font-semibold">متطابقة فيثاغورس المثلثية</span>
+                                    <span class="font-mono text-slate-500">sin²x + cos²x = 1</span>
+                                </button>
+                                <button onclick="insertTemplate('integrate(2x, x)')" class="btn-calc flex justify-between items-center p-2 rounded-xl bg-slate-50 hover:bg-brand-red/10 text-xs transition">
+                                    <span class="font-semibold">تكامل دالة خطية</span>
+                                    <span class="font-mono text-slate-500">∫ 2x dx</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- سجل الحساب التاريخي المدعوم بالتخزين اللوكال ميموري -->
+            <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-premium">
+                <div class="flex justify-between items-center mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-brand-blue"><i class="fa-solid fa-clock-rotate-left"></i></span>
+                        <h4 class="font-bold text-slate-800 text-sm">أرشيف وسجل العمليات الأخيرة</h4>
+                    </div>
+                    <button onclick="clearHistory()" class="text-xs text-brand-red font-bold hover:underline">مسح الأرشيف</button>
+                </div>
+                <div id="historyContainer" class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-36 overflow-y-auto pr-1">
+                    <p class="text-xs text-slate-400 py-4 text-center md:col-span-2">الأرشيف فارغ الآن. ابدأ العمليات الرياضية لحفظها هنا.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- العمود الأيسر (مساعد الذكاء الاصطناعي AI) -->
+        <div class="lg:col-span-4 flex flex-col">
+            <div class="bg-white rounded-3xl border border-slate-200/80 shadow-premium overflow-hidden flex flex-col h-[650px] lg:h-full min-h-[500px]">
+                <!-- هيدر صندوق الدردشة مع الذكاء الاصطناعي -->
+                <div class="bg-gradient-to-r from-brand-blue to-brand-lightblue text-white p-4 flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <div class="bg-white/20 p-2 rounded-xl shadow-inner text-sm">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-sm">المعلم الرياضي والذكائي</h3>
+                            <p class="text-[10px] text-white/80">اشرح الحلول والمعادلات خطوة بخطوة</p>
+                        </div>
+                    </div>
+                    <button onclick="clearChat()" class="text-xs bg-white/10 hover:bg-white/20 px-2 py-1.5 rounded-lg transition" title="مسح المحادثة">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+
+                <!-- مساحة استعراض المحادثات والرسائل -->
+                <div id="chatBox" class="flex-grow p-4 overflow-y-auto space-y-4 bg-slate-50/50">
+                    <!-- رسالة البداية والترحيب -->
+                    <div class="flex items-start gap-2">
+                        <div class="bg-brand-blue text-white w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs shadow-md">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <div class="bg-white border border-slate-100 rounded-2xl rounded-tr-none p-3 shadow-sm text-xs max-w-[85%]">
+                            <p class="font-bold text-brand-blue mb-1">أهلاً بك، أنا مرشدك الأكاديمي الذكي!</p>
+                            <p class="text-slate-600 leading-relaxed">اكتب أي مسألة رياضية أو اسألني عن مفاهيم التكامل، التفاضل، الإحصاء، أو المصفوفات، وسأجيبك بالتفصيل والشرح الممل وبكل سهولة.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- عنصر جاري التفكير ومحاكاة التحميل -->
+                    <div id="aiLoader" class="hidden flex items-start gap-2 animate-pulse">
+                        <div class="bg-brand-blue text-white w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs">
+                            <i class="fa-solid fa-circle-notch animate-spin"></i>
+                        </div>
+                        <div class="bg-white border border-slate-150 rounded-2xl rounded-tr-none p-3 shadow-sm text-xs">
+                            <p class="text-slate-500 font-semibold flex items-center gap-1">
+                                جاري التفكير والتحليل العلمي لطلبك...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- أسئلة سريعة مقترحة تفاعلية مبرمجة مسبقاً -->
+                <div class="p-2 bg-white border-t border-slate-100 flex gap-2 overflow-x-auto whitespace-nowrap scrollbar-none">
+                    <button onclick="sendQuickPrompt('اشرح لي مفهوم التكامل بالتجزئة مع مثال')" class="text-[11px] bg-slate-50 hover:bg-brand-blue/10 hover:text-brand-blue border border-slate-200 rounded-full px-3 py-1.5 font-semibold text-slate-600 transition flex-shrink-0">🔍 تكامل بالتجزئة</button>
+                    <button onclick="sendQuickPrompt('كيف نحل المعادلات التفاضلية البسيطة؟')" class="text-[11px] bg-slate-50 hover:bg-brand-blue/10 hover:text-brand-blue border border-slate-200 rounded-full px-3 py-1.5 font-semibold text-slate-600 transition flex-shrink-0">🧮 معادلات تفاضلية</button>
+                    <button onclick="sendQuickPrompt('ما هو مفهوم المصفوفات المربعة وخصائصها؟')" class="text-[11px] bg-slate-50 hover:bg-brand-blue/10 hover:text-brand-blue border border-slate-200 rounded-full px-3 py-1.5 font-semibold text-slate-600 transition flex-shrink-0">📊 مصفوفات</button>
+                </div>
+
+                <!-- حقل الكتابة والإرسال إلى الـ AI -->
+                <div class="p-3 bg-white border-t border-slate-200 flex items-center gap-2">
+                    <input id="aiUserQuery" type="text" class="flex-grow bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:bg-white transition-all font-semibold placeholder-slate-400" placeholder="اسأل عن أي مفهوم رياضي أو علمي..." onkeydown="onAiInputKeydown(event)">
+                    <button onclick="submitAiQuery()" class="btn-calc bg-brand-blue text-white w-10 h-10 rounded-2xl flex items-center justify-center hover:bg-blue-800 shadow-md">
+                        <i class="fa-solid fa-paper-plane text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- إشعار مخصص (Toast Notification) بديل عن alert الكريهة -->
+    <div id="customToast" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-50 bg-slate-900/95 backdrop-blur-md text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-2 text-sm transition-all duration-300 opacity-0 pointer-events-none border border-slate-800">
+        <i id="toastIcon" class="fa-solid fa-info text-brand-lightblue"></i>
+        <span id="toastText">رسالة إرشادية</span>
+    </div>
+
+    <!-- التذييل مع حقوق الملكية للناشر ماجد كريم الفريجي مع العلامة التجارية المسجلة -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-8">
+        <div class="max-w-7xl mx-auto px-4 text-center flex flex-col items-center justify-center gap-2">
+            <p class="text-slate-600 font-bold text-sm flex items-center justify-center gap-1.5">
+                <span>كافة الحقوق والملكيات البرمجية محفوظة لـ</span>
+                <span class="text-brand-blue font-black tracking-wide">ماجد كريم الفريجي</span>
+                <span class="w-5 h-5 rounded-full border border-slate-400 text-[10px] font-bold text-slate-500 font-mono flex items-center justify-center shadow-sm" title="علامة تجارية مسجلة">R</span>
+                <span>2026</span>
+            </p>
+            <p class="text-[11px] text-slate-400 max-w-lg">
+                هذه الحاسبة تعمل بمحركات محاكاة متطورة تدعم الرسم البياني اللحظي وحساب الدوال الحسابية بالاعتماد التفاعلي على الذكاء الاصطناعي الأقوى والأحدث عالمياً.
+            </p>
+        </div>
+    </footer>
+
+    <!-- محرك وتطبيقات تفاعل الموقع بالكامل -->
+    <script>
+        // تعريف متغيرات محرك الذكاء الاصطناعي الأساسية
+        const apiKey = ""; // تُقاد برمجياً من بيئة تشغيل النظام
+        let angleUnit = 'rad'; // 'rad' أو 'deg'
+        let shiftPressed = false;
+        let localHistory = [];
+
+        // تعريف عناصر العرض
+        const calcDisplay = document.getElementById('calcDisplay');
+        const livePreview = document.getElementById('livePreview');
+        const equationHistory = document.getElementById('equationHistory');
+        const historyContainer = document.getElementById('historyContainer');
+        const chatBox = document.getElementById('chatBox');
+        const aiLoader = document.getElementById('aiLoader');
+        const aiUserQuery = document.getElementById('aiUserQuery');
+
+        // استدعاء البداية وتهيئة رسام الرسوم البيانية
+        window.onload = function() {
+            showNotification('مرحباً بك في المنصة الفائقة الذكاء!', 'success');
+            loadHistoryFromMemory();
+            plotGraph(); // رسم أولي للدالة الافتراضية
+            populateConverterUnits();
+        };
+
+        // إدارة التبويبات العلوية بالموقع
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+
+            document.getElementById('btn-calc-tab').className = 'px-4 py-2 rounded-lg transition';
+            document.getElementById('btn-converter-tab').className = 'px-4 py-2 rounded-lg transition';
+            document.getElementById('btn-constants-tab').className = 'px-4 py-2 rounded-lg transition';
+
+            document.getElementById('btn-' + tabId).className = 'px-4 py-2 rounded-lg bg-white text-brand-blue shadow-sm font-semibold transition';
+            
+            if (tabId === 'calc-tab') {
+                // إعادة رسم التخطيط للتأكد من حجم الكانفاس بعد التبديل
+                setTimeout(plotGraph, 100);
+            }
+        }
+
+        // إشعارات نوتیفیکیشن مخصصة (Toast)
+        function showNotification(message, type = 'info') {
+            const toast = document.getElementById('customToast');
+            const toastText = document.getElementById('toastText');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastText.textContent = message;
+            if (type === 'error') {
+                toastIcon.className = "fa-solid fa-circle-exclamation text-brand-red text-base";
+            } else if (type === 'success') {
+                toastIcon.className = "fa-solid fa-circle-check text-green-500 text-base";
+            } else {
+                toastIcon.className = "fa-solid fa-circle-info text-brand-lightblue text-base";
+            }
+
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+
+        // إضافة عناصر/رموز إلى حقل العرض للحاسبة
+        function appendToken(token) {
+            const currentPosition = calcDisplay.selectionStart || calcDisplay.value.length;
+            const textBefore = calcDisplay.value.substring(0, currentPosition);
+            const textAfter = calcDisplay.value.substring(currentPosition);
+
+            calcDisplay.value = textBefore + token + textAfter;
+            
+            // وضع المؤشر بالمنتصف في الدوال المفتوحة
+            let offset = token.endsWith('(') ? token.length : token.length;
+            calcDisplay.focus();
+            calcDisplay.setSelectionRange(currentPosition + offset, currentPosition + offset);
+
+            onDisplayInput();
+        }
+
+        // تفعيل / إلغاء وضع الـ Shift
+        function handleShift() {
+            shiftPressed = !shiftPressed;
+            const shiftModeSpan = document.getElementById('shiftMode');
+            if (shiftPressed) {
+                shiftModeSpan.classList.remove('hidden');
+            } else {
+                shiftModeSpan.classList.add('hidden');
+            }
+        }
+
+        // مسح تام للمدخلات
+        function clearAll() {
+            calcDisplay.value = '';
+            livePreview.textContent = '0';
+            equationHistory.innerHTML = '&nbsp;';
+            shiftPressed = false;
+            document.getElementById('shiftMode').classList.add('hidden');
+        }
+
+        // مسح خانة واحدة للوراء
+        function backspace() {
+            const val = calcDisplay.value;
+            if (val.length > 0) {
+                calcDisplay.value = val.substring(0, val.length - 1);
+            }
+            onDisplayInput();
+        }
+
+        // تبديل وحدات قياس الزوايا
+        function toggleAngleMode() {
+            angleUnit = (angleUnit === 'rad') ? 'deg' : 'rad';
+            document.getElementById('angleMode').textContent = angleUnit.toUpperCase();
+            showNotification(`تم التبديل لوحدة ${angleUnit === 'rad' ? 'الراديان RAD' : 'الدرجات DEG'}`, 'info');
+            onDisplayInput();
+        }
+
+        // تهيئة التعبير ليتوافق مع Math.js
+        function prepareExpr(expr) {
+            let p = expr.replace(/×/g, '*').replace(/÷/g, '/');
+            // معالجة حسابات الزوايا (درجات أم راديان)
+            if (angleUnit === 'deg') {
+                p = p.replace(/sin\(([^)]+)\)/g, 'sin($1 deg)');
+                p = p.replace(/cos\(([^)]+)\)/g, 'cos($1 deg)');
+                p = p.replace(/tan\(([^)]+)\)/g, 'tan($1 deg)');
+                p = p.replace(/asin\(([^)]+)\)/g, 'asin($1) to deg');
+                p = p.replace(/acos\(([^)]+)\)/g, 'acos($1) to deg');
+                p = p.replace(/atan\(([^)]+)\)/g, 'atan($1) to deg');
+            }
+            return p;
+        }
+
+        // حدث إدخال مباشر على الكيبورد أو الأزرار
+        function onDisplayInput() {
+            const rawExpr = calcDisplay.value;
+            if (!rawExpr.trim()) {
+                livePreview.textContent = '0';
+                return;
+            }
+            try {
+                const prepared = prepareExpr(rawExpr);
+                let evalResult = math.evaluate(prepared);
+                
+                if (evalResult !== undefined && typeof evalResult !== 'function') {
+                    if (typeof evalResult === 'number') {
+                        evalResult = math.format(evalResult, { precision: 10 });
+                    }
+                    livePreview.textContent = evalResult;
+                    livePreview.className = "text-right text-brand-lightblue font-mono text-lg md:text-xl font-bold break-all";
+                }
+            } catch (err) {
+                // أثناء الكتابة التعبير قد يكون غير مكتمل، لا تظهر أخطاء حمراء بل مؤشر بسيط
+                livePreview.textContent = '...';
+                livePreview.className = "text-right text-slate-400 font-mono text-sm";
+            }
+        }
+
+        // التقييم والحساب النهائي وحفظه بالأرشيف
+        function evaluateExpression() {
+            const rawExpr = calcDisplay.value;
+            if (!rawExpr.trim()) {
+                showNotification('يرجى كتابة العملية الحسابية أولاً!', 'error');
+                return;
+            }
+
+            try {
+                const prepared = prepareExpr(rawExpr);
+                let finalRes = math.evaluate(prepared);
+
+                if (typeof finalRes === 'number') {
+                    finalRes = math.format(finalRes, { precision: 12 });
+                }
+
+                equationHistory.textContent = `${rawExpr} =`;
+                calcDisplay.value = finalRes;
+                livePreview.textContent = finalRes;
+                livePreview.className = "text-right text-brand-lightblue font-mono text-lg md:text-xl font-bold break-all";
+
+                addToHistory(rawExpr, finalRes);
+                showNotification('تم احتساب المعادلة بنجاح!', 'success');
+            } catch (err) {
+                showNotification('هناك خطأ في صياغة العملية المدخلة!', 'error');
+                livePreview.textContent = 'خطأ رياضي';
+                livePreview.className = "text-right text-brand-red font-mono text-sm font-bold";
+            }
+        }
+
+        // لوحة الثوابت والمعادلات الجاهزة
+        function insertConstant(val) {
+            appendToken(val);
+            showNotification('تم إدراج الثابت العلمي بنجاح!', 'success');
+        }
+
+        function insertTemplate(template) {
+            calcDisplay.value = template;
+            onDisplayInput();
+            showNotification('تم جلب النموذج، يمكنك الآن طلب الشرح من الـ AI!', 'success');
+        }
+
+        // ----------------------------------------------------
+        // نظام الرسم البياني التفاعلي المتكامل (Interactive Grapher)
+        // ----------------------------------------------------
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+        let graphScale = 40; // البكسلات لكل وحدة رسم
+        let graphOffsetX = 0; // إزاحة المركز X
+        let graphOffsetY = 0; // إزاحة المركز Y
+        let isDragging = false;
+        let dragStartX, dragStartY;
+
+        // مواءمة حجم الكانفاس برمجياً مع الحاوية
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            if (graphOffsetX === 0 && graphOffsetY === 0) {
+                graphOffsetX = canvas.width / 2;
+                graphOffsetY = canvas.height / 2;
+            }
+        }
+
+        function plotGraph() {
+            resizeCanvas();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const funcExpr = document.getElementById('graphFunction').value.trim();
+            if (!funcExpr) return;
+
+            // رسم الشبكة الإحداثية (Grid Lines)
+            drawGrid();
+
+            // البدء في رسم الدالة الرياضية
+            ctx.beginPath();
+            ctx.strokeStyle = '#ef4444'; // خط الدالة أحمر جذاب وجريء
+            ctx.lineWidth = 2.5;
+
+            let first = true;
+            for (let pixelX = 0; pixelX < canvas.width; pixelX++) {
+                // تحويل إحداثيات البكسل إلى قيم رياضية حقيقية لـ X
+                let mathX = (pixelX - graphOffsetX) / graphScale;
+                
+                try {
+                    // تقييم الدالة عند النقطة X
+                    let scope = { x: mathX };
+                    let mathY = math.evaluate(funcExpr, scope);
+
+                    if (typeof mathY === 'number' && !isNaN(mathY) && isFinite(mathY)) {
+                        // تحويل قيمة Y الرياضية إلى إحداثيات بكسل للرسم
+                        let pixelY = graphOffsetY - (mathY * graphScale);
+
+                        if (first) {
+                            ctx.moveTo(pixelX, pixelY);
+                            first = false;
+                        } else {
+                            ctx.lineTo(pixelX, pixelY);
+                        }
+                    } else {
+                        first = true; // نقطة غير متصلة
+                    }
+                } catch (e) {
+                    // تجاهل الأخطاء أثناء الرسم العشوائي
+                }
+            }
+            ctx.stroke();
+        }
+
+        function drawGrid() {
+            ctx.strokeStyle = '#334155'; // شبكة خفيفة باللون الداكن المتناسق
+            ctx.lineWidth = 0.5;
+
+            // خطوط الطول والعرض للشبكة
+            const step = graphScale;
+            
+            // الخطوط الرأسية
+            let startX = graphOffsetX % step;
+            for (let x = startX; x < canvas.width; x += step) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+
+            // الخطوط الأفقية
+            let startY = graphOffsetY % step;
+            for (let y = startY; y < canvas.height; y += step) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            // المحاور الرئيسية (X & Y Axis) باللون الأزرق الفاتح الجذاب
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 1.5;
+
+            // محور X
+            ctx.beginPath();
+            ctx.moveTo(0, graphOffsetY);
+            ctx.lineTo(canvas.width, graphOffsetY);
+            ctx.stroke();
+
+            // محور Y
+            ctx.beginPath();
+            ctx.moveTo(graphOffsetX, 0);
+            ctx.lineTo(graphOffsetX, canvas.height);
+            ctx.stroke();
+
+            // نصوص وعلامات ترقيم المحاور
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '10px Courier New';
+            ctx.fillText("Y", graphOffsetX + 8, 15);
+            ctx.fillText("X", canvas.width - 15, graphOffsetY - 8);
+        }
+
+        // تفاعلية الفأرة والسحب للرسم البياني
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            dragStartX = e.clientX - graphOffsetX;
+            dragStartY = e.clientY - graphOffsetY;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                graphOffsetX = e.clientX - dragStartX;
+                graphOffsetY = e.clientY - dragStartY;
+                plotGraph();
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        // التكبير والتصغير من خلال عجلة الماوس
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+            graphScale *= zoomFactor;
+            // حماية المقياس من التطرف
+            if (graphScale < 5) graphScale = 5;
+            if (graphScale > 300) graphScale = 300;
+            plotGraph();
+        });
+
+
+        // ----------------------------------------------------
+        // نظام إدارة وحفظ الأرشيف في التخزين المؤقت المحلي
+        // ----------------------------------------------------
+        function addToHistory(expr, result) {
+            const newItem = { expr, result, time: new Date().toLocaleTimeString('ar-EG'), id: Date.now() };
+            localHistory.unshift(newItem);
+            if (localHistory.length > 20) localHistory.pop(); // حفظ 20 عملية فقط بحد أقصى
+
+            saveHistoryToMemory();
+            renderHistoryUI();
+        }
+
+        function renderHistoryUI() {
+            if (localHistory.length === 0) {
+                historyContainer.innerHTML = `<p class="text-xs text-slate-400 py-4 text-center md:col-span-2">الأرشيف فارغ الآن. ابدأ العمليات الرياضية لحفظها هنا.</p>`;
+                return;
+            }
+
+            historyContainer.innerHTML = localHistory.map(item => `
+                <div onclick="restoreHistoryItem('${item.expr}')" class="flex justify-between items-center p-2 rounded-xl bg-slate-50 border border-slate-100 hover:bg-slate-100 cursor-pointer transition group">
+                    <div class="flex flex-col truncate max-w-[70%]">
+                        <span class="text-[10px] text-slate-400">${item.time}</span>
+                        <span class="text-xs text-slate-700 font-mono truncate" title="${item.expr}">${item.expr}</span>
+                    </div>
+                    <span class="text-xs font-bold text-brand-blue font-mono group-hover:text-brand-red truncate">= ${item.result}</span>
+                </div>
+            `).join('');
+        }
+
+        function restoreHistoryItem(expr) {
+            calcDisplay.value = expr;
+            onDisplayInput();
+            showNotification('تمت استعادة المعادلة المدخلة للحاسبة!', 'info');
+        }
+
+        function clearHistory() {
+            localHistory = [];
+            saveHistoryToMemory();
+            renderHistoryUI();
+            showNotification('تم تنظيف الأرشيف بالكامل!', 'info');
+        }
+
+        function saveHistoryToMemory() {
+            localStorage.setItem('majid_ultra_calc_history', JSON.stringify(localHistory));
+        }
+
+        function loadHistoryFromMemory() {
+            const saved = localStorage.getItem('majid_ultra_calc_history');
+            if (saved) {
+                try {
+                    localHistory = JSON.parse(saved);
+                    renderHistoryUI();
+                } catch (e) {
+                    localHistory = [];
+                }
+            }
+        }
+
+
+        // ----------------------------------------------------
+        // محول الوحدات المتطور
+        // ----------------------------------------------------
+        const unitsData = {
+            length: {
+                meter: { name: "متر (m)", val: 1 },
+                kilometer: { name: "كيلومتر (km)", val: 1000 },
+                centimeter: { name: "سنتيمتر (cm)", val: 0.01 },
+                mile: { name: "ميل (mile)", val: 1609.34 },
+                inch: { name: "بوصة (inch)", val: 0.0254 }
+            },
+            weight: {
+                gram: { name: "جرام (g)", val: 1 },
+                kilogram: { name: "كيلوجرام (kg)", val: 1000 },
+                pound: { name: "باوند (lb)", val: 453.592 },
+                ounce: { name: "أونصة (oz)", val: 28.3495 }
+            },
+            temp: {
+                celsius: { name: "سيليسيوس (C°)", special: true },
+                fahrenheit: { name: "فهرنهايت (F°)", special: true },
+                kelvin: { name: "كيلفن (K)", special: true }
+            },
+            area: {
+                sqMeter: { name: "متر مربع (m²)", val: 1 },
+                sqKm: { name: "كيلومتر مربع (km²)", val: 1000000 },
+                acre: { name: "فدان (Acre)", val: 4046.86 },
+                hectare: { name: "هكتار (Hectare)", val: 10000 }
+            }
+        };
+
+        function populateConverterUnits() {
+            const type = document.getElementById('convType').value;
+            const fromSelect = document.getElementById('convFrom');
+            const toSelect = document.getElementById('convTo');
+
+            fromSelect.innerHTML = '';
+            toSelect.innerHTML = '';
+
+            const categoryUnits = unitsData[type];
+            for (let key in categoryUnits) {
+                const optFrom = document.createElement('option');
+                optFrom.value = key;
+                optFrom.textContent = categoryUnits[key].name;
+                fromSelect.appendChild(optFrom);
+
+                const optTo = document.createElement('option');
+                optTo.value = key;
+                optTo.textContent = categoryUnits[key].name;
+                toSelect.appendChild(optTo);
+            }
+
+            // تحديد خيارين مختلفين لتسهيل التجربة على المستخدم تلقائياً
+            if (toSelect.options.length > 1) {
+                toSelect.selectedIndex = 1;
+            }
+
+            calculateConversion();
+        }
+
+        function onConverterTypeChange() {
+            populateConverterUnits();
+        }
+
+        function calculateConversion() {
+            const type = document.getElementById('convType').value;
+            const fromUnit = document.getElementById('convFrom').value;
+            const toUnit = document.getElementById('convTo').value;
+            const inputVal = parseFloat(document.getElementById('convInputVal').value);
+
+            if (isNaN(inputVal)) {
+                document.getElementById('convResultVal').textContent = '0';
+                return;
+            }
+
+            let result = 0;
+
+            if (type === 'temp') {
+                // معالجة خاصة لدرجات الحرارة
+                if (fromUnit === toUnit) {
+                    result = inputVal;
+                } else if (fromUnit === 'celsius' && toUnit === 'fahrenheit') {
+                    result = (inputVal * 9/5) + 32;
+                } else if (fromUnit === 'celsius' && toUnit === 'kelvin') {
+                    result = inputVal + 273.15;
+                } else if (fromUnit === 'fahrenheit' && toUnit === 'celsius') {
+                    result = (inputVal - 32) * 5/9;
+                } else if (fromUnit === 'fahrenheit' && toUnit === 'kelvin') {
+                    result = ((inputVal - 32) * 5/9) + 273.15;
+                } else if (fromUnit === 'kelvin' && toUnit === 'celsius') {
+                    result = inputVal - 273.15;
+                } else if (fromUnit === 'kelvin' && toUnit === 'fahrenheit') {
+                    result = ((inputVal - 273.15) * 9/5) + 32;
+                }
+            } else {
+                // التحويل العام بالاعتماد على معامل النسبة الأساسية
+                const fromFactor = unitsData[type][fromUnit].val;
+                const toFactor = unitsData[type][toUnit].val;
+                
+                // تحويل القيمة للوحدة المرجعية أولاً ثم للوحدة المستهدفة
+                const valInBase = inputVal * fromFactor;
+                result = valInBase / toFactor;
+            }
+
+            // تنسيق الناتج النهائي
+            if (result % 1 !== 0) {
+                result = parseFloat(result.toFixed(6));
+            }
+
+            document.getElementById('convResultVal').textContent = result;
+        }
+
+
+        // ----------------------------------------------------
+        // بروتوكولات ومحركات الذكاء الاصطناعي (Gemini 2.5 Flash)
+        // ----------------------------------------------------
+
+        function clearChat() {
+            chatBox.innerHTML = `
+                <div class="flex items-start gap-2">
+                    <div class="bg-brand-blue text-white w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs shadow-md">
+                        <i class="fa-solid fa-brain"></i>
+                    </div>
+                    <div class="bg-white border border-slate-100 rounded-2xl rounded-tr-none p-3 shadow-sm text-xs max-w-[85%]">
+                        <p class="font-bold text-brand-blue mb-1">أهلاً بك، أنا مرشدك الأكاديمي الذكي!</p>
+                        <p class="text-slate-600 leading-relaxed">اكتب أي مسألة رياضية أو اسألني عن مفاهيم التكامل، التفاضل، الإحصاء، أو المصفوفات، وسأجيبك بالتفصيل والشرح الممل وبكل سهولة.</p>
+                    </div>
+                </div>
+            `;
+            showNotification('تم تصفير محادثة المساعد العلمي!', 'info');
+        }
+
+        function onAiInputKeydown(event) {
+            if (event.key === 'Enter') {
+                submitAiQuery();
+            }
+        }
+
+        function sendQuickPrompt(promptText) {
+            aiUserQuery.value = promptText;
+            submitAiQuery();
+        }
+
+        // إرسال التعبير الحالي المتواجد في شاشة الحاسبة للحصول على شرح تفصيلي بالذكاء الاصطناعي
+        function sendExpressionToAI() {
+            const rawExpr = calcDisplay.value;
+            const resVal = livePreview.textContent;
+
+            if (!rawExpr.trim()) {
+                showNotification('الحاسبة فارغة الآن! يرجى إدخال معادلة أولاً ليقوم الذكاء الاصطناعي بشرحها.', 'error');
+                return;
+            }
+
+            const promptText = `يرجى شرح وتحليل هذه العملية الرياضية بالتفصيل العلمي والخطوات الرياضية الواضحة مع استعراض النتيجة النهائية لها باللغة العربية:
+العملية المدخلة: ${rawExpr}
+الناتج النهائي المقدر: ${resVal}`;
+
+            aiUserQuery.value = `تحليل عملية: ${rawExpr}`;
+            appendUserChatBubble(promptText);
+            executeGeminiQuery(promptText);
+        }
+
+        function submitAiQuery() {
+            const query = aiUserQuery.value.trim();
+            if (!query) {
+                showNotification('يرجى صياغة سؤالك العلمي ليجيبك الذكاء الاصطناعي!', 'error');
+                return;
+            }
+
+            appendUserChatBubble(query);
+            aiUserQuery.value = '';
+
+            executeGeminiQuery(query);
+        }
+
+        function appendUserChatBubble(text) {
+            const bubble = document.createElement('div');
+            bubble.className = 'flex items-start gap-2 justify-end';
+            bubble.innerHTML = `
+                <div class="bg-brand-blue text-white rounded-2xl rounded-tl-none p-3 shadow-md max-w-[85%] text-xs">
+                    <p class="font-bold text-blue-200 mb-1">أنت</p>
+                    <p class="leading-relaxed">${text}</p>
+                </div>
+                <div class="bg-brand-red text-white w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs shadow-md">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+            `;
+            chatBox.appendChild(bubble);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function appendAiChatBubble(markdownText) {
+            const bubble = document.createElement('div');
+            bubble.className = 'flex items-start gap-2';
+            
+            // تحويل استجابة المارك داون لـ HTML منسق وجميل
+            const formattedHtml = marked.parse(markdownText);
+
+            bubble.innerHTML = `
+                <div class="bg-brand-blue text-white w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs shadow-md">
+                    <i class="fa-solid fa-robot"></i>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-2xl rounded-tr-none p-4 shadow-md max-w-[85%] text-xs text-slate-800 leading-relaxed overflow-x-auto">
+                    <p class="font-bold text-brand-blue mb-1.5 flex items-center gap-1">
+                        <i class="fa-solid fa-wand-magic-sparkles text-brand-red"></i>
+                        <span>المرشد الرياضي المساعد</span>
+                    </p>
+                    <div class="prose prose-sm max-w-none text-slate-700 font-sans leading-relaxed">
+                        ${formattedHtml}
+                    </div>
+                </div>
+            `;
+            chatBox.appendChild(bubble);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // إرسال الاستعلامات لخادم Gemini مع تطبيق الـ Backoff و 5 محاولات إعادة
+        async function executeGeminiQuery(query, attempt = 1) {
+            // إظهار اللودر وحفظ موقعه بالأسفل
+            aiLoader.classList.remove('hidden');
+            chatBox.appendChild(aiLoader);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            const systemInstruction = `أنت مرشد علمي ومعلم رياضيات أكاديمي متميز. 
+مهمتك شرح الخطوات الرياضية والفيزيائية بكل وضوح وتفصيل وتبسيط باللغة العربية.
+استخدم الـ Markdown والرموز الرياضية المناسبة لإبراز القوانين الأساسية والنتائج والخطوات الهامة.`;
+
+            const payload = {
+                contents: [{
+                    parts: [{ text: query }]
+                }],
+                systemInstruction: {
+                    parts: [{ text: systemInstruction }]
+                }
+            };
+
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`خادم الذكاء الاصطناعي أرجع حالة غير مستقرة: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const aiResultText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (!aiResultText) {
+                    throw new Error('الخادم لم يرسل رداً علمياً صالحاً.');
+                }
+
+                aiLoader.classList.add('hidden');
+                appendAiChatBubble(aiResultText);
+                showNotification('تمت الاستجابة وحل المسألة من الـ AI!', 'success');
+
+            } catch (error) {
+                console.error(error);
+                const maxRetries = 5;
+
+                if (attempt <= maxRetries) {
+                    const nextDelay = Math.pow(2, attempt) * 600; // تكرار أسي تدرجي 1.2ث، 2.4ث، 4.8ث إلخ.
+                    setTimeout(() => {
+                        executeGeminiQuery(query, attempt + 1);
+                    }, nextDelay);
+                } else {
+                    aiLoader.classList.add('hidden');
+                    const errorMsg = `نعتذر بشدة! حدث خلل في الاتصال بخوادم المحاكاة أو تم استهلاك كامل الحصة المتاحة للذكاء الاصطناعي مجاناً اليوم. يرجى المحاولة لاحقاً.`;
+                    appendAiChatBubble(errorMsg);
+                    showNotification('تعذر الاتصال بالذكاء الاصطناعي حالياً', 'error');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+
+
